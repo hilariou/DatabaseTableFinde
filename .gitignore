@@ -1,0 +1,10 @@
+# Python virtual environment
+venv/
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Other files to ignore
+.DS_Store        # macOS
+*.egg-info/

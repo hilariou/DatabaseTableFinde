@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Table Finder</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #000; /* Dark background for a terminal look */
+            color: #00ffcc; /* Neon color for text */
+            font-family: 'Orbitron', sans-serif; /* Futuristic font */
+            padding: 20px;
+            overflow: hidden; /* Hide scrollbars */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh; /* Full height for centering */
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+            animation: fadeIn 1.5s; /* Fade in animation */
+            font-size: 3em; /* Title size */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .typewriter {
+            display: inline-block;
+            overflow: hidden; 
+            border-right: .15em solid #00ffcc; /* Cursor effect */
+            white-space: nowrap; 
+            margin: 0 auto; 
+            letter-spacing: .15em; /* Space between letters */
+            animation: typing 4s steps(30, end), blink-caret .75s step-end infinite; /* Typing + blinking */
+        }
+
+        @keyframes typing {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent; }
+            50% { border-color: #00ffcc; }
+        }
+
+        .container {
+            background-color: #292929; /* Background for the container */
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.7);
+            max-width: 1200px;
+            margin: auto;
+            position: relative;
+            overflow-y: auto; /* Enable vertical scrolling */
+            display: flex;
+            flex-direction: column;
+        }
+
+       input[type="text"], input[type="button"], input[type="password"], input[type="submit"],
+        button {
+            width: calc(100% - 20px); /* Ensure buttons and inputs have the same width */
+            padding: 10px; /* Padding for input and button */
+            margin: 5px 0; /* Margin for spacing */
+            border-radius: 15px; /* Rounded corners */
+            background-color: #404040; /* Input background */
+            color: #ffffff; /* Text color */
+            font-size: 16px; /* Font size */
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.5); /* Shadow effect */
+            border: none; /* Remove solid border */
+            transition: transform 0.2s, box-shadow 0.3s, background-color 0.3s; /* Transition effects */
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus, input[type="submit"]:focus, 
+        button:focus {
+            outline: none; /* Remove outline on focus */
+            background-color: #3b3b3b; /* Darken background on focus */
+            box-shadow: 0 0 15px rgba(255, 204, 0, 1); /* Highlight effect on focus */
+        }
+
+        input[type="button"], input[type="submit"], button {
+            background-color: #ffcc00; /* Button color */
+            color: #000; /* Text color for buttons */
+            font-weight: bold; /* Bold font */
+        }
+
+        .tables-list {
+            margin-top: 20px;
+            padding: 60px;
+            background-color: #1a1a1a;
+            border-radius: 5px;
+            max-height: 200px; /* Set max height for the scroll */
+            overflow-y: auto; /* Enable vertical scrolling */
+            opacity: 0; /* Start hidden for animation */
+            transition: opacity 0.3s; /* Smooth transition for opacity */
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            padding: 10px;
+            background-color: #00ffcc; /* Header background */
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            padding: 10px;
+            border-bottom: 1px solid #00ffcc;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s; /* Hover effects */
+        }
+
+        .table-row:hover {
+            background-color: #3b3b3b;
+            transform: scale(1.02); /* Slight scale-up effect */
+        }
+
+        .zoom-button {
+            background-color: #00ccff; /* Button color */
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px; /* Rounded button */
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .zoom-button:hover {
+            background-color: #00ffcc;
+            transform: scale(1.05); /* Scale-up effect on button */
+        }
+
+        .search-bar {
+            margin-top: 10px;
+        }
+           .username-password-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1; /* This makes it evenly distribute space */
+            margin-right: 10px; /* Adds space between the two input groups */
+        }
+
+        .input-group:last-child {
+            margin-right: 0; /* Remove margin on the last input group */
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            color: #aaa;
+            animation: fadeIn 1.5s; /* Fade-in for footer */
+        }
+
+        .animated-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: linear-gradient(45deg, rgba(0,100,100,0.2), rgba(0,200,200,0.2));
+            opacity: 0.2;
+            animation: terminalBackground 5s linear infinite alternate; 
+            z-index: 0;
+        }
+
+        @keyframes terminalBackground {
+            0% { background-color: rgba(0,0,0,0.8); }
+            50% { background-color: rgba(50,50,50,0.8); }
+            100% { background-color: rgba(0,0,0,0.8); }
+        }
+
+        .table-header, .table-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .details-table th, .details-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .details-table th, .details-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .table-header, .table-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .message-box {
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-size: 16px;    
+            max-width: 600px;
+            text-align: center;
+        }
+
+        /* Error message styling */
+        .message-box.error {
+            background-color: #ffcccc;  /* Light red background for error */
+            color: #a94442;  /* Dark red text for error */
+            border: 1px solid #a94442;
+        }
+
+        /* Success message styling (optional) */
+        .message-box.success {
+            background-color: #dff0d8;  /* Light green background for success */
+            color: #3c763d;  /* Dark green text for success */
+            border: 1px solid #3c763d;
+        }
+
+        /* Info message styling (optional) */
+        .message-box.info {
+            background-color: #d9edf7;  /* Light blue background for info */
+            color: #31708f;  /* Dark blue text for info */
+            border: 1px solid #31708f;
+        }
+
+    </style>
+</head>
+<body>
+     <h1 class="typewriter" id="rotating-title"></h1> 
+    <div class="animated-background"></div> <!-- Background animation -->
+   
+        <div class="container">
+            <form id="connection-form" onsubmit="connectToDatabase(event)">
+                <label for="server-ip">Server IP Address:</label>
+                <input type="text" name="server-ip" id="server-ip" value="localhost" placeholder="Enter server IP address" required>
+
+                <label for="db-name">Database Name:</label>
+                <input type="text" name="db-name" id="db-name" value="your_database_name" placeholder="Enter database name" required>
+
+                <div class="username-password-container">
+                    <div class="input-group">
+                        <label for="username">Username:</label>
+                        <input type="text" name="username" id="username" value="root" placeholder="Enter username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password:</label>
+                        <input type="password" name="password" id="password" placeholder="Enter password" autocomplete="off">
+                    </div>
+                </div>
+
+                <button type="submit">Connect</button>
+            </form>
+
+            <div id="message" class="message-box"></div>
+            
+            <!-- Initially hidden -->
+            <input type="button" id="get-tables-button" value="Get Tables" onclick="getTables()" style="display: none;">
+            <div class="search-bar">
+                <input type="text" id="search-bar" placeholder="Search tables..." onkeyup="searchTables()" autocomplete="off">
+            </div>
+            <div id="tables-list"></div>
+            <div id="table-data"></div>            
+
+            
+        </div>
+    
+
+    <footer>
+        <p>© 2024 Cybersecurity Database Finder. All rights reserved. Developed by The_geek</p>
+        <p>Disclaimer: This tool does not connect to any real database.</p>
+    </footer>
+
+    <script>
+
+async function connectToDatabase(event) {
+    event.preventDefault(); 
+
+    const serverIP = document.getElementById('server-ip').value;
+    const dbName = document.getElementById('db-name').value;
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    try {
+        const response = await fetch('/connect', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                'server-ip': serverIP,
+                'db-name': dbName,
+                'username': username,
+                'password': password
+            }),
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            document.getElementById('message').innerText = `Error: ${errorData.message}`;
+            return;
+        }
+
+        const result = await response.json();
+        document.getElementById('message').innerText = result.message;
+        
+        // Show the Get Tables button
+        document.getElementById('get-tables-button').style.display = 'inline';
+
+    } catch (error) {
+        document.getElementById('message').innerText = `Network Error: ${error.message}`;
+    }
+}
+async function getTables() {
+    const tablesList = document.getElementById('tables-list');
+    tablesList.innerHTML = `<h3>Tables:</h3>
+                            <div class="table-header">
+                                <div>Table Name</div>
+                                <div>Columns</div>
+                                <div>Actions</div>
+                            </div>`;
+
+    try {
+        const response = await fetch('/get_tables');
+        const result = await response.json();
+
+        if (!response.ok) {
+            document.getElementById('message').innerText = `Error: ${result.message}`;
+            return;
+        }
+
+        // Iterate over each table in the response
+        result.tables.forEach(table => {
+            const row = document.createElement('div');
+            row.className = 'table-row';
+            
+            // Create the row for each table, showing the table name
+            row.innerHTML = `<div>${table}</div>
+                             <div>${Object.keys(result.data[table][0] || {}).join(', ') || '-'}</div>
+                             <div><button class="zoom-button" onclick="viewTableDetails('${table}')">View Details</button></div>`;
+            tablesList.appendChild(row);
+        });
+
+    } catch (error) {
+        document.getElementById('message').innerText = `Failed to fetch tables: ${error.message}`;
+    }
+}
+
+// Function to view table details (rows)
+function viewTableDetails(tableName) {
+    const tableData = document.getElementById('table-data');
+    tableData.innerHTML = `<h4>Details of ${tableName}</h4>`;
+
+    fetch('/get_tables')
+        .then(response => response.json())
+        .then(result => {
+            const data = result.data[tableName];
+            if (data.length === 0) {
+                tableData.innerHTML += '<p>No data available for this table.</p>';
+            } else {
+                const table = document.createElement('table');
+                table.className = 'details-table';
+                
+                // Create table header based on column names
+                const headers = Object.keys(data[0]);
+                const thead = table.createTHead();
+                const headerRow = thead.insertRow();
+                headers.forEach(header => {
+                    const th = document.createElement('th');
+                    th.innerText = header;
+                    headerRow.appendChild(th);
+                });
+
+                // Create table rows
+                const tbody = table.createTBody();
+                data.forEach(rowData => {
+                    const row = tbody.insertRow();
+                    headers.forEach(header => {
+                        const cell = row.insertCell();
+                        cell.innerText = rowData[header];
+                    });
+                });
+
+                tableData.appendChild(table);
+            }
+        })
+        .catch(error => {
+            document.getElementById('message').innerText = `Failed to fetch table details: ${error.message}`;
+        });
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+    // Rotating titles
+    const titles = ["Cybersecurity Database Finder", "Insightful Data Exploration", "Secure Your Information", "Find Your Tables Quickly"];
+    let currentIndex = 0;
+
+    function updateTitle() {
+        const rotatingTitle = document.getElementById("rotating-title");
+
+        if (rotatingTitle) {
+            rotatingTitle.textContent = titles[currentIndex];  // Set the text
+            rotatingTitle.classList.add('typewriter');         // Add typing animation
+
+            // Wait for the duration of typing animation, then switch title
+            setTimeout(() => {
+                rotatingTitle.classList.remove('typewriter');  // Remove typing animation
+                currentIndex = (currentIndex + 1) % titles.length; // Loop through titles
+                setTimeout(updateTitle, 1000); // Switch title after a small delay
+            }, 4000); // Wait 4 seconds for typing animation before switching
+        }
+    }
+
+    // Start the title update cycle
+    updateTitle();
+});
+
+
+        
+        
+
+       // Function to search and highlight matching data in the table
+function searchTables() {
+    const searchValue = document.getElementById('search-bar').value.toLowerCase();  // Get the input from the search bar
+    const tableData = document.getElementById('table-data');
+
+    // Check if the table data exists
+    if (!tableData.innerHTML) {
+        document.getElementById('message').innerText = "Please load a table to search.";
+        return;
+    }
+
+    // Get all rows from the table
+    const rows = tableData.querySelectorAll('tbody tr');
+    
+    // Loop through each row and check if any cell matches the search term
+    rows.forEach(row => {
+        let found = false;
+
+        // Loop through each cell in the row
+        row.querySelectorAll('td').forEach(cell => {
+            // If the cell contains the search term, highlight it
+            if (cell.innerText.toLowerCase().includes(searchValue)) {
+                found = true;
+                cell.style.backgroundColor = '#3c763d';  // Highlight the cell
+            } else {
+                cell.style.backgroundColor = '';  // Remove highlight if no match
+            }
+        });
+
+        // Show or hide the row based on whether a match was found
+        row.style.display = found ? '' : 'none';  // Show the row if a match is found
+    });
+}
+
+        function showTableDetails(tableName) {
+            const table = sampleTables.find(t => t.name === tableName);
+            if (table) {
+                alert(`Details of table: ${table.name}\nColumns: ${table.columns.join(', ')}\n\n(This is a placeholder for actual table details.)`);
+            }
+        }
+    </script>
+</body>
+</html>
